@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:paynet_billing}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+app:
+  fixed-amount: 42000
+springdoc:
+  swagger-ui:
+    default-models-expand-depth: -1
+    doc-expansion: none
+  paths-to-exclude: /api/v1/applications/**
+internal:
+  api:
+    header-name: X-Internal-Key
+    key: ${INTERNAL_KEY:7f3d8c4a1b927ed1f6a1f16d7f86dcb9f824ad6}
+security:
+  creds:
+    partners:
+      - username: paynet
+        password-hash: $2a$10$vQtnAkI3Aj0gEAhj0XFzU./2nX5Fv7SbSXVeiIhAj.K4chF1baOAe
+        enabled: true

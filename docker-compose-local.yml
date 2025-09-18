@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  keycloak_db:
+    image: postgres:16.4-alpine
+    container_name: keycloak_billing_postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    ports:
+      - "5433:5432"
+    volumes:
+      - keycloak-data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: keycloak_billing
+    command: ["start-dev", "--http-port=9090"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "9090:9090"
+    depends_on:
+      - keycloak_db
+
+  postgres:
+    image: postgres:16.4-alpine
+    container_name: paynet_billing_postgres
+    environment:
+      POSTGRES_DB: paynet_billing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+  keycloak-data:

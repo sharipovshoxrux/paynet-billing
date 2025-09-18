@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - logicalFilePath: no-path
+  - changeSet:
+      id: V1__init
+      author: shohruh.sharipov
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            path: db/changelog/v1/v1__init.sql

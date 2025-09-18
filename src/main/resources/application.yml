@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: paynet-billing
+  liquibase:
+    enabled: true
+  profiles:
+    active: ${SPRING_PROFILE:local}
