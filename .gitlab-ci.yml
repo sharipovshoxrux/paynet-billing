@@ -1,0 +1,42 @@
+include:
+  - project: 'oxinus-io/social-card/devops/ci'
+    ref: "staging"
+    file: '/workflows/paynet-billing/workflow.yml'
+    rules:
+      - if: $CI_COMMIT_REF_NAME =~ /^staging$/
+      - if: $CI_COMMIT_REF_NAME =~ /^.*\/staging\/.*$/
+  - project: 'oxinus-io/social-card/devops/ci'
+    ref: "master"
+    file: '/workflows/paynet-billing/workflow.yml'
+    rules:
+      - if: $CI_COMMIT_REF_NAME =~ /^production$/              
+      - if: $CI_COMMIT_REF_NAME =~ /.*\/release\/.*$/
+  - project: 'oxinus-io/social-card/devops/ci'
+    ref: "test"
+    file: '/workflows/paynet-billing/workflow.yml'
+    rules:
+      - if: $CI_COMMIT_REF_NAME =~ /.*citest.*$/
+  - project: 'oxinus-io/social-card/devops/ci'
+    ref: "development"
+    file: '/workflows/paynet-billing/workflow.yml'
+    rules:
+      - if: $CI_COMMIT_REF_NAME =~ /.*citest.*$/
+        when: never
+      - if: $CI_COMMIT_REF_NAME =~ /^production$/        
+        when: never              
+      - if: $CI_COMMIT_REF_NAME =~ /.*\/release\/.*$/
+        when: never
+      - if: $CI_COMMIT_REF_NAME =~ /^staging$/
+        when: never
+      - if: $CI_COMMIT_REF_NAME =~ /^.*\/staging\/.*$/
+        when: never
+      - if: $CI_COMMIT_REF_NAME =~ /^master$/
+        when: never
+      - if: $CI_COMMIT_REF_NAME =~ /^main$/
+        when: never        
+      - when: always
+
+placeholder:
+  only: []
+  script: echo placholder
+
