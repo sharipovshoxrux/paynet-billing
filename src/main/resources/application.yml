@@ -4,4 +4,4 @@ spring:
   liquibase:
     enabled: true
   profiles:
-    active: ${SPRING_PROFILE:local}
+    active: ${SPRING_PROFILE:dev}
