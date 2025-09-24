@@ -24,6 +24,6 @@ class CheckTransactionHandler implements RpcHandler {
         var p = binder.bind(params, JsonRpcModels.CheckParams.class);
         boolean paid = billing.isAlreadyPaid(p.fields().application_id());
         var fields = Map.<String, Object>of("applicationId", p.fields().application_id(), "status", paid ? "PAID" : "NOT_PAID");
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(JsonRpcController.now(clock), fields));
+        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null, JsonRpcController.now(clock), fields));
     }
 }

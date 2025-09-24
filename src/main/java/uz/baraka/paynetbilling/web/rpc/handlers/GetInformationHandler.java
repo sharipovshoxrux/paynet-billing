@@ -24,6 +24,6 @@ class GetInformationHandler implements RpcHandler {
         var p = binder.bind(params, JsonRpcModels.GetInfoParams.class);
         var info = billing.getApplicationInfo(p.fields().application_id());
         var fields = Map.<String, Object>of("name", info.name(), "amount", info.amount(), "paid", info.paid());
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(JsonRpcController.now(clock), fields));
+        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result("0", JsonRpcController.now(clock), fields));
     }
 }

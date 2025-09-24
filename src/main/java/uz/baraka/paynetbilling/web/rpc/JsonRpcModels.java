@@ -1,5 +1,7 @@
 package uz.baraka.paynetbilling.web.rpc;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -17,7 +19,7 @@ public final class JsonRpcModels {
         }
     }
 
-    public record Result(String timestamp, Map<String, Object> fields) {
+    public record Result(@JsonInclude(JsonInclude.Include.NON_NULL) String status, @JsonInclude(JsonInclude.Include.NON_NULL) String timestamp, Map<String, Object> fields) {
     }
 
     public record Error(int code, String message) {

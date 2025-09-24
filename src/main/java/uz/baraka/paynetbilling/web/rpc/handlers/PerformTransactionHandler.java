@@ -28,6 +28,6 @@ class PerformTransactionHandler implements RpcHandler {
 
         var info = billing.perform(p.fields().application_id(), p.amount());
         var fields = Map.<String, Object>of("name", info.name(), "amount", info.amount(), "paid", info.paid());
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(JsonRpcController.now(clock), fields));
+        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null, JsonRpcController.now(clock), fields));
     }
 }

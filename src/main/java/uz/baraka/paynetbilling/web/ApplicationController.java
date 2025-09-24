@@ -6,16 +6,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uz.baraka.paynetbilling.config.AppProps;
+import uz.baraka.paynetbilling.domain.ApplicationPurpose;
+import uz.baraka.paynetbilling.domain.ApplicationSource;
 import uz.baraka.paynetbilling.domain.dto.request.CreateApplicationRequest;
 import uz.baraka.paynetbilling.domain.dto.response.CreateApplicationResponse;
 import uz.baraka.paynetbilling.application.ApplicationService;
+import uz.baraka.paynetbilling.domain.entity.TxnState;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/applications")
@@ -38,5 +45,16 @@ public class ApplicationController {
     @GetMapping(value = "/get-price", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getFixedPrice() {
         return ResponseEntity.ok(Map.of("fixedAmount", props.fixedAmount()));
+    }
+
+    @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ApplicationService.ApplicationStatusResponse>> getApplicationsStatus(
+            @PathVariable UUID userId,
+            @RequestParam(required = false) TxnState status,
+            @RequestParam(required = false) ApplicationPurpose purpose,
+            @RequestParam(required = false) ApplicationSource source
+    ) {
+        var res = service.findStatusesByUserId(userId, status, purpose, source);
+        return ResponseEntity.ok(res);
     }
 }

@@ -5,7 +5,16 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 app:
-  fixed-amount: 42000
+  fixed-amount: 4200000
+  webhook:
+    enabled: true
+    url: ${WEBHOOK_URL:http://localhost:9099/payment-callback}
+    token-url: https://kc-dev.uz-pay-dev.ox.one/realms/datawise/protocol/openid-connect/token
+    client-id: paynet-billing-api
+    client-secret: 2wKozwtQAFbTIA9jKMUC6nBKQdO879uR
+    connect-timeout: 3s
+    read-timeout: 5s
+    max-retries: 3
 springdoc:
   swagger-ui:
     default-models-expand-depth: -1

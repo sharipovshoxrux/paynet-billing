@@ -1,9 +1,11 @@
 package uz.baraka.paynetbilling.application.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.BillingService;
+import uz.baraka.paynetbilling.application.event.PaymentCompletedEvent;
 import uz.baraka.paynetbilling.application.validation.AmountValidator;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
@@ -26,6 +28,7 @@ public class BillingServiceImpl implements BillingService {
     private final PaymentTransactionRepository txRepo;
     private final ApplicationRepository appRepo;
     private final AmountValidator amountValidator;
+    private final ApplicationEventPublisher events;
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -58,6 +61,8 @@ public class BillingServiceImpl implements BillingService {
         tx.setAmount(amount);
         tx.setState(TxnState.PAID);
         txRepo.save(tx);
+
+        events.publishEvent(new PaymentCompletedEvent(app.getApplicationId(), app.getUserId(), true));
 
         return new ApplicationInfo(app.getApplicationId(), app.getName(), app.getAmount(), true);
     }

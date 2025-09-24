@@ -24,6 +24,6 @@ class CancelTransactionHandler implements RpcHandler {
         var p = binder.bind(params, JsonRpcModels.CancelParams.class);
         billing.cancelByApplicationId(p.fields().application_id());
         var fields = Map.<String, Object>of("applicationId", p.fields().application_id(), "status", "CANCELLED");
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(JsonRpcController.now(clock), fields));
+        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null, JsonRpcController.now(clock), fields));
     }
 }

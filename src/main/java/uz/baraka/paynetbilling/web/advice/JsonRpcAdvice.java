@@ -3,12 +3,18 @@ package uz.baraka.paynetbilling.web.advice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import uz.baraka.paynetbilling.exception.InvalidAmountException;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
 
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class JsonRpcAdvice {
+    @ExceptionHandler(InvalidAmountException.class)
+    public ResponseEntity<JsonRpcModels.Response> invalidAmount(InvalidAmountException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(null, 413, e.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<JsonRpcModels.Response> badParams(IllegalArgumentException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(null, -32602, e.getMessage()));

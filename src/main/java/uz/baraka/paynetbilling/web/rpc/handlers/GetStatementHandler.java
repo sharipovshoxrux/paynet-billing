@@ -28,7 +28,7 @@ class GetStatementHandler implements RpcHandler {
         for (var r : rows) {
             list.add(Map.of("applicationId", r.applicationId(), "name", r.name(), "amount", r.amount(), "timestamp", r.timestamp()));
         }
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null, Map.of("statements", list)));
+        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null,null, Map.of("statements", list)));
     }
 
     private static LocalDateTime parseTs(String v) {

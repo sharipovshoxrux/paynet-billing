@@ -5,7 +5,14 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 app:
-  fixed-amount: ${APP_FIXED_AMOUNT:0}
+  fixed-amount: ${APP_FIXED_AMOUNT:4200000}
+  webhook:
+    enabled: true
+    url: ${WEBHOOK_URL:http://localhost:9099/payment-callback}
+    secret: ${WEBHOOK_SECRET:dev-secret}
+    connect-timeout: 3s
+    read-timeout: 5s
+    max-retries: 3
 internal:
   api:
     header-name: X-Internal-Key
