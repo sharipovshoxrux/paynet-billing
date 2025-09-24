@@ -62,7 +62,7 @@ public class BillingServiceImpl implements BillingService {
         tx.setState(TxnState.PAID);
         txRepo.save(tx);
 
-        events.publishEvent(new PaymentCompletedEvent(app.getApplicationId(), app.getUserId(), true));
+        //events.publishEvent(new PaymentCompletedEvent(app.getApplicationId(), app.getUserId(), true));
 
         return new ApplicationInfo(app.getApplicationId(), app.getName(), app.getAmount(), true);
     }

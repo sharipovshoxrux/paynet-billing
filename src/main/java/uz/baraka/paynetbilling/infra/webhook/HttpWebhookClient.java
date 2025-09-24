@@ -59,13 +59,13 @@ public class HttpWebhookClient implements WebhookClient{
             Integer httpCode = null;
             try {
                 restClient.post()
-                        .uri(cfg.url())                                // MUST be a full URL
+                        .uri(cfg.url())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + accessToken)
                         .header("X-Idempotency-Key", idempotencyKey)
                         .header("X-Event-Type", "payment.updated")
                         .header("User-Agent", "paynet-billing")
-                        .body(body)                                     // already serialized JSON
+                        .body(body)
                         .retrieve()
                         .toBodilessEntity();
 
