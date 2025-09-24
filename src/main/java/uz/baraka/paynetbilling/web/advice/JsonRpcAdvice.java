@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uz.baraka.paynetbilling.exception.InvalidAmountException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
+import uz.baraka.paynetbilling.exception.TransactionAlreadyExistsException;
+import uz.baraka.paynetbilling.exception.TransactionNotFoundException;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
 import uz.baraka.paynetbilling.web.rpc.RpcRequestIdHolder;
 
@@ -24,6 +26,15 @@ public class JsonRpcAdvice {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<JsonRpcModels.Response> badParams(IllegalArgumentException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), -32602, e.getMessage()));
+    }
+    @ExceptionHandler(TransactionAlreadyExistsException.class)
+    public ResponseEntity<JsonRpcModels.Response> transactionAlreadyExists(TransactionAlreadyExistsException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 201, e.getMessage()));
+    }
+
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public ResponseEntity<JsonRpcModels.Response> transactionNotFound(TransactionNotFoundException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 203, e.getMessage()));
     }
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<JsonRpcModels.Response> notFound(NoSuchElementException e) {

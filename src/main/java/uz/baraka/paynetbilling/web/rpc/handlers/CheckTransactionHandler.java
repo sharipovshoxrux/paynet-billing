@@ -20,10 +20,20 @@ class CheckTransactionHandler implements RpcHandler {
 
     @Override public String method(){ return "CheckTransaction"; }
 
-    @Override public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
+    @Override
+    public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var p = binder.bind(params, JsonRpcModels.CheckParams.class);
-        boolean paid = billing.isAlreadyPaid(p.fields().application_id());
-        var fields = Map.<String, Object>of("applicationId", p.fields().application_id(), "status", paid ? "PAID" : "NOT_PAID");
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null, JsonRpcController.now(clock), fields));
+
+        var res = billing.checkByTransactionId(p.transactionId());
+
+        var values = Map.<String,Object>of(
+                "transactionState", res.transactionState(),
+                "providerTrnId",    res.providerTrnId()
+        );
+
+        return JsonRpcModels.Response.okFlat(
+                id,
+                new JsonRpcModels.FlatResult(JsonRpcController.now(clock), values)
+        );
     }
 }

@@ -18,12 +18,22 @@ class CancelTransactionHandler implements RpcHandler {
     private final BillingService billing;
     private final Clock clock;
 
-    @Override public String method(){ return "CancelTransaction"; }
+    @Override public String method() { return "CancelTransaction"; }
 
-    @Override public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
+    @Override
+    public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var p = binder.bind(params, JsonRpcModels.CancelParams.class);
-        billing.cancelByApplicationId(p.fields().application_id());
-        var fields = Map.<String, Object>of("applicationId", p.fields().application_id(), "status", "CANCELLED");
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null, JsonRpcController.now(clock), fields));
+
+        long providerTrnId = billing.cancelByTransactionId(p.transactionId());
+
+        var flatValues = Map.<String,Object>of(
+                "providerTrnId", providerTrnId,
+                "transactionState", 2
+        );
+
+        return JsonRpcModels.Response.okFlat(
+                id,
+                new JsonRpcModels.FlatResult(JsonRpcController.now(clock), flatValues)
+        );
     }
 }

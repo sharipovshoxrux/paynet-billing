@@ -30,6 +30,9 @@ public class PaymentTransaction {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name="transaction_id", nullable=false, unique=true)
+    private Long transactionId;
+
     @Column(name = "application_id", nullable = false, length = 64)
     private String applicationId;
 

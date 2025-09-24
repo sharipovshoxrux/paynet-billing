@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
+    Optional<PaymentTransaction> findByTransactionId(Long transactionId);
     boolean existsByApplicationIdAndState(String applicationId, TxnState state);
     Optional<PaymentTransaction> findTopByApplicationIdOrderByCreatedAtDesc(String applicationId);
     List<PaymentTransaction> findAllByCreatedAtBetween(OffsetDateTime from, OffsetDateTime to);
