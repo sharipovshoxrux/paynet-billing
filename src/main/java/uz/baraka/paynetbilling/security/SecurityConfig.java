@@ -1,6 +1,7 @@
 package uz.baraka.paynetbilling.security;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -19,6 +20,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import uz.baraka.paynetbilling.web.rpc.RpcIdExtractingFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -52,6 +54,15 @@ public class SecurityConfig {
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    @Order(0)
+    public FilterRegistrationBean<RpcIdExtractingFilter> rpcIdFilter(RpcIdExtractingFilter f) {
+        var reg = new FilterRegistrationBean<>(f);
+        reg.setOrder(0);
+        reg.addUrlPatterns("/api/v1/billing/rpc");
+        return reg;
     }
 
     @Bean

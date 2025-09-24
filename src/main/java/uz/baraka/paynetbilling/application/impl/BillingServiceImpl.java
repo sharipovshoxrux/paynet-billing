@@ -5,21 +5,21 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.BillingService;
-import uz.baraka.paynetbilling.application.event.PaymentCompletedEvent;
 import uz.baraka.paynetbilling.application.validation.AmountValidator;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
+import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
 import uz.baraka.paynetbilling.port.ApplicationRepository;
 import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +29,12 @@ public class BillingServiceImpl implements BillingService {
     private final ApplicationRepository appRepo;
     private final AmountValidator amountValidator;
     private final ApplicationEventPublisher events;
-    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("GMT+5"));
 
     @Override
     public ApplicationInfo getApplicationInfo(String applicationId) {
         var app = appRepo.findByApplicationId(applicationId)
-                .orElseThrow(() -> new NoSuchElementException("Application not found: " + applicationId));
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
         boolean paid = txRepo.existsByApplicationIdAndState(applicationId, TxnState.PAID);
         return new ApplicationInfo(app.getApplicationId(), app.getName(), app.getAmount(), paid);
     }
@@ -48,7 +48,7 @@ public class BillingServiceImpl implements BillingService {
     @Transactional
     public ApplicationInfo perform(String applicationId, BigDecimal amount) {
         var app = appRepo.findByApplicationId(applicationId)
-                .orElseThrow(() -> new NoSuchElementException("Application not found: " + applicationId));
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
 
         amountValidator.assertFixed(amount);
 

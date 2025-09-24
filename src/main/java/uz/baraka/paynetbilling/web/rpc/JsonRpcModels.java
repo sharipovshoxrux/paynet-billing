@@ -9,7 +9,7 @@ public final class JsonRpcModels {
     public record Request(String jsonrpc, String method, Object id, Map<String, Object> params) {
     }
 
-    public record Response(String jsonrpc, Object id, Result result, Error error) {
+    public record Response(String jsonrpc, Object id, @JsonInclude(JsonInclude.Include.NON_NULL) Result result, Error error) {
         public static Response ok(Object id, Result result) {
             return new Response("2.0", id, result, null);
         }
