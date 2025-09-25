@@ -1,6 +1,8 @@
 package uz.baraka.paynetbilling.web;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -57,4 +59,23 @@ public class ApplicationController {
         var res = service.findStatusesByUserId(userId, status, purpose, source);
         return ResponseEntity.ok(res);
     }
+
+    /**
+     * Internal webhook-like endpoint: another service notifies that a card
+     * has been issued/re-issued for applicationId.
+     * Returns 204 No Content.
+     */
+    @PostMapping(
+            value = "/outcomes",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Void> recordOutcome(@RequestBody @Valid ApplicationOutcomeRequest body) {
+        service.recordOutcome(body.applicationId(), body.applicationPurpose());
+        return ResponseEntity.noContent().build();
+    }
+
+    public record ApplicationOutcomeRequest(
+            @NotBlank String applicationId,
+            @NotNull ApplicationPurpose applicationPurpose
+    ) {}
 }

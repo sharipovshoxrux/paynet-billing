@@ -1,6 +1,7 @@
 package uz.baraka.paynetbilling.application.impl;
 
 import jakarta.annotation.Nullable;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.ApplicationService;
@@ -8,9 +9,12 @@ import uz.baraka.paynetbilling.config.AppProps;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
 import uz.baraka.paynetbilling.domain.entity.Application;
+import uz.baraka.paynetbilling.domain.entity.ApplicationOutcome;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
 import uz.baraka.paynetbilling.domain.factory.ApplicationFactory;
+import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
+import uz.baraka.paynetbilling.port.ApplicationOutcomeRepository;
 import uz.baraka.paynetbilling.port.ApplicationRepository;
 import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
 import uz.baraka.paynetbilling.util.IdGenerator;
@@ -23,22 +27,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ApplicationServiceImpl implements ApplicationService {
 
     private final ApplicationRepository repo;
+    private final ApplicationOutcomeRepository outcomeRepo;
     private final PaymentTransactionRepository txRepo;
     private final AppProps props;
     private final ApplicationFactory factory;
-
-    public ApplicationServiceImpl(ApplicationRepository repo,
-                                     PaymentTransactionRepository txRepo,
-                                     AppProps props,
-                                     ApplicationFactory factory) {
-        this.txRepo = txRepo;
-        this.repo = repo;
-        this.props = props;
-        this.factory = factory;
-    }
 
     @Override
     @Transactional
@@ -92,5 +88,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .toList();
 
         return results;
+    }
+
+    @Transactional
+    public void recordOutcome(String applicationId, ApplicationPurpose purpose) {
+        repo.findByApplicationId(applicationId)
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+
+        if (!outcomeRepo.existsByApplicationIdAndPurpose(applicationId, purpose)) {
+            ApplicationOutcome o = new ApplicationOutcome();
+            o.setApplicationId(applicationId);
+            o.setPurpose(purpose);
+            outcomeRepo.save(o);
+        }
     }
 }

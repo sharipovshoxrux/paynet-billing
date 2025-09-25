@@ -15,3 +15,11 @@ databaseChangeLog:
         - sqlFile:
             dbms: 'postgresql'
             path: db/changelog/v1/v2__add_transaction_id_to_payment_transactions.sql
+
+  - changeSet:
+      id: V3__application_outcomes
+      author: shohruh.sharipov
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            path: db/changelog/v1/v3__application_outcomes.sql

@@ -8,10 +8,12 @@ import uz.baraka.paynetbilling.application.BillingService;
 import uz.baraka.paynetbilling.application.validation.AmountValidator;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
+import uz.baraka.paynetbilling.exception.CannotCancelAfterOutcomeException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyCancelledException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyExistsException;
 import uz.baraka.paynetbilling.exception.TransactionNotFoundException;
+import uz.baraka.paynetbilling.port.ApplicationOutcomeRepository;
 import uz.baraka.paynetbilling.port.ApplicationRepository;
 import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
@@ -33,6 +35,7 @@ import java.util.NoSuchElementException;
 public class BillingServiceImpl implements BillingService {
     private final PaymentTransactionRepository txRepo;
     private final ApplicationRepository appRepo;
+    private final ApplicationOutcomeRepository outcomeRepo;
     private final AmountValidator amountValidator;
     private final ApplicationEventPublisher events;
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("GMT+5"));
@@ -83,6 +86,15 @@ public class BillingServiceImpl implements BillingService {
     public long cancelByTransactionId(long transactionId) {
         var tx = txRepo.findByTransactionId(transactionId)
                 .orElseThrow(() -> new TransactionNotFoundException("Транзакция не найдена"));
+
+        var app = appRepo.findByApplicationId(tx.getApplicationId())
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+
+        boolean outcomeExists = outcomeRepo.existsByApplicationIdAndPurpose(
+                app.getApplicationId(), app.getPurpose());
+
+        if (outcomeExists) {throw new CannotCancelAfterOutcomeException("Недостаточно средств на счету клиента для отмены платежа");}
+
 
         if (tx.getState() == TxnState.CANCELLED) {
             throw new TransactionAlreadyCancelledException("Транзакция уже отменена");

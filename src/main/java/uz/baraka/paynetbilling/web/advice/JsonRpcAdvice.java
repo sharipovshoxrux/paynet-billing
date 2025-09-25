@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import uz.baraka.paynetbilling.exception.CannotCancelAfterOutcomeException;
 import uz.baraka.paynetbilling.exception.InvalidAmountException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyCancelledException;
@@ -13,6 +14,7 @@ import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
 import uz.baraka.paynetbilling.web.rpc.RpcRequestIdHolder;
 
 import java.util.NoSuchElementException;
+import java.util.concurrent.CancellationException;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -43,6 +45,11 @@ public class JsonRpcAdvice {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 202, e.getMessage()));
     }
 
+    @ExceptionHandler(CannotCancelAfterOutcomeException.class)
+    public ResponseEntity<JsonRpcModels.Response> cannotCancelAfter(CancellationException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 77, e.getMessage()));
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<JsonRpcModels.Response> notFound(NoSuchElementException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 404, e.getMessage()));
@@ -50,9 +57,5 @@ public class JsonRpcAdvice {
     @ExceptionHandler(NoSuchApplicationException.class)
     public ResponseEntity<JsonRpcModels.Response> applicationNotFound(NoSuchApplicationException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 302, e.getMessage()));
-    }
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<JsonRpcModels.Response> serverErr(Exception e) {
-        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), -32000, "Server error"));
     }
 }

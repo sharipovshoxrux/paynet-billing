@@ -23,6 +23,8 @@ public interface ApplicationService {
                                                          @Nullable ApplicationPurpose purpose,
                                                          @Nullable ApplicationSource source);
 
+    void recordOutcome(String applicationId, ApplicationPurpose purpose);
+
     record ApplicationStatusResponse(
             String applicationId,
             TxnState status,
