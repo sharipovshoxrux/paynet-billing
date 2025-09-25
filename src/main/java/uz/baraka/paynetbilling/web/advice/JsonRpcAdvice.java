@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uz.baraka.paynetbilling.exception.InvalidAmountException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
+import uz.baraka.paynetbilling.exception.TransactionAlreadyCancelledException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyExistsException;
 import uz.baraka.paynetbilling.exception.TransactionNotFoundException;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
@@ -36,6 +37,12 @@ public class JsonRpcAdvice {
     public ResponseEntity<JsonRpcModels.Response> transactionNotFound(TransactionNotFoundException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 203, e.getMessage()));
     }
+
+    @ExceptionHandler(TransactionAlreadyCancelledException.class)
+    public ResponseEntity<JsonRpcModels.Response> transactionAlreadyCancelled(TransactionAlreadyCancelledException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 202, e.getMessage()));
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<JsonRpcModels.Response> notFound(NoSuchElementException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 404, e.getMessage()));

@@ -9,6 +9,7 @@ import uz.baraka.paynetbilling.application.validation.AmountValidator;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
+import uz.baraka.paynetbilling.exception.TransactionAlreadyCancelledException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyExistsException;
 import uz.baraka.paynetbilling.exception.TransactionNotFoundException;
 import uz.baraka.paynetbilling.port.ApplicationRepository;
@@ -17,6 +18,7 @@ import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -49,18 +51,30 @@ public class BillingServiceImpl implements BillingService {
     }
 
     @Override
-    public List<ReconRow> statementForReconciliation(LocalDateTime from, LocalDateTime to) {
-        var all = txRepo.findAllByCreatedAtBetween(from.atOffset(ZoneOffset.UTC), to.atOffset(ZoneOffset.UTC));
-        var paid = all.stream().filter(t -> t.getState() == TxnState.PAID).toList();
+    @Transactional(readOnly = true)
+    public List<StatementRow> statementForReconciliation(LocalDateTime from, LocalDateTime to) {
+        ZoneId APP_ZONE = ZoneId.of("Asia/Tashkent");
+        OffsetDateTime fromUtc = from.atZone(APP_ZONE).toInstant().atOffset(ZoneOffset.UTC);
+        OffsetDateTime toUtc   = to.atZone(APP_ZONE).toInstant().atOffset(ZoneOffset.UTC);
 
-        var out = new ArrayList<ReconRow>(paid.size());
+        var all = txRepo.findAllByCreatedAtBetween(fromUtc, toUtc);
+
+        var paid = all.stream()
+                .filter(t -> t.getState() == TxnState.PAID)
+                .toList();
+
+        DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(APP_ZONE);
+
+        var out = new ArrayList<StatementRow>(paid.size());
         for (var t : paid) {
-            var app = appRepo.findByApplicationId(t.getApplicationId()).orElse(null);
-            String name = app != null ? app.getName() : "";
-            out.add(new ReconRow(t.getApplicationId(), name, t.getAmount(),
-                    TS.format(t.getCreatedAt().toLocalDateTime())));
+            out.add(new StatementRow(
+                    t.getId(),
+                    t.getTransactionId(),
+                    t.getAmount(),
+                    TS.format(t.getCreatedAt())
+            ));
         }
-        out.sort(Comparator.comparing(ReconRow::timestamp));
+        out.sort(Comparator.comparing(StatementRow::timestamp));
         return out;
     }
 
@@ -70,10 +84,12 @@ public class BillingServiceImpl implements BillingService {
         var tx = txRepo.findByTransactionId(transactionId)
                 .orElseThrow(() -> new TransactionNotFoundException("Транзакция не найдена"));
 
-        if (tx.getState() != TxnState.CANCELLED) {
-            tx.setState(TxnState.CANCELLED);
-            txRepo.save(tx);
+        if (tx.getState() == TxnState.CANCELLED) {
+            throw new TransactionAlreadyCancelledException("Транзакция уже отменена");
         }
+
+        tx.setState(TxnState.CANCELLED);
+        txRepo.save(tx);
 
         return tx.getId();
     }
@@ -107,7 +123,7 @@ public class BillingServiceImpl implements BillingService {
     @Transactional(readOnly = true)
     public JsonRpcModels.CheckByTxResult checkByTransactionId(long transactionId) {
         var tx = txRepo.findByTransactionId(transactionId)
-                .orElseThrow(() -> new NoSuchElementException("Tx not found"));
+                .orElseThrow(() -> new TransactionNotFoundException("Транзакция не найдена"));
 
         int state = switch (tx.getState()) {
             case PAID     -> 1;

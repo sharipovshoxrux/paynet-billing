@@ -9,30 +9,42 @@ import uz.baraka.paynetbilling.web.rpc.RpcHandler;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 class GetStatementHandler implements RpcHandler {
-    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final BillingService billing;
 
     @Override public String method(){ return "GetStatement"; }
 
-    @Override public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
+    @Override
+    public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var from = parseTs(String.valueOf(params.get("dateFrom")));
         var to   = parseTs(String.valueOf(params.get("dateTo")));
+
         var rows = billing.statementForReconciliation(from, to);
 
-        var list = new ArrayList<Map<String,Object>>(rows.size());
+        var statements = new ArrayList<Map<String,Object>>(rows.size());
         for (var r : rows) {
-            list.add(Map.of("applicationId", r.applicationId(), "name", r.name(), "amount", r.amount(), "timestamp", r.timestamp()));
+            var m = new LinkedHashMap<String,Object>(4);
+            m.put("amount",        r.amount().longValueExact());
+            m.put("providerTrnId", r.providerTrnId());
+            m.put("transactionId", r.transactionId() != null ? r.transactionId() : 0L);
+            m.put("timestamp",     r.timestamp());
+            statements.add(m);
         }
-        return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result(null,null, Map.of("statements", list)));
+
+        return JsonRpcModels.Response.okFlat(
+                id,
+                new JsonRpcModels.FlatResult(null, Map.of("statements", statements))
+        );
     }
 
     private static LocalDateTime parseTs(String v) {
-        DateTimeFormatter A = TS, B = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        var A = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        var B = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
         try { return LocalDateTime.parse(v, A); } catch(Exception ignored){}
         try { return LocalDateTime.parse(v, B); } catch(Exception ignored){}
         throw new IllegalArgumentException("Invalid timestamp");
