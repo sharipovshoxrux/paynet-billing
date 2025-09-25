@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
+import uz.baraka.paynetbilling.domain.BankType;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -55,6 +56,10 @@ public class Application {
     @Enumerated(EnumType.STRING)
     @Column(name = "purpose", nullable = false, length = 16)
     private ApplicationPurpose purpose;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="bank_type", nullable=false, length=16)
+    private BankType bankType;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

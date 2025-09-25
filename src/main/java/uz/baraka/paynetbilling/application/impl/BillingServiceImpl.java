@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.BillingService;
 import uz.baraka.paynetbilling.application.validation.AmountValidator;
+import uz.baraka.paynetbilling.domain.BankType;
+import uz.baraka.paynetbilling.domain.entity.Application;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
 import uz.baraka.paynetbilling.exception.CannotCancelAfterOutcomeException;
@@ -17,6 +19,7 @@ import uz.baraka.paynetbilling.port.ApplicationOutcomeRepository;
 import uz.baraka.paynetbilling.port.ApplicationRepository;
 import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
+import uz.baraka.paynetbilling.web.rpc.ServiceIdMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ public class BillingServiceImpl implements BillingService {
     private final ApplicationRepository appRepo;
     private final ApplicationOutcomeRepository outcomeRepo;
     private final AmountValidator amountValidator;
+    private final ServiceIdMapper serviceIdMapper;
     private final ApplicationEventPublisher events;
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("GMT+5"));
 
@@ -145,5 +150,56 @@ public class BillingServiceImpl implements BillingService {
 
         long providerTrnId = tx.getId();
         return new JsonRpcModels.CheckByTxResult(providerTrnId, state);
+    }
+
+    @Transactional(readOnly = true)
+    public Application requireAppAndValidateService(String applicationId, Integer serviceId) {
+        var app = appRepo.findByApplicationId(applicationId)
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+
+        int expected = serviceIdMapper.toServiceId(app.getBankType());
+        if (!Objects.equals(serviceId, expected))
+            throw new NoSuchApplicationException("Клиент не найден");
+        return app;
+    }
+
+    @Transactional(readOnly = true)
+    public PaymentTransaction requireTxAndValidateService(long transactionId, Integer serviceId) {
+        var tx = txRepo.findByTransactionId(transactionId)
+                .orElseThrow(() -> new TransactionNotFoundException("Транзакция не найдена"));
+
+        var app = appRepo.findByApplicationId(tx.getApplicationId())
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+        int expected = serviceIdMapper.toServiceId(app.getBankType());
+        if (!Objects.equals(serviceId, expected))
+            throw new NoSuchApplicationException("Клиент не найден");
+        return tx;
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatementRow> statementForReconciliation(LocalDateTime from, LocalDateTime to, Integer serviceId) {
+        BankType filterBank = (serviceId != null) ? serviceIdMapper.toBankType(serviceId) : null;
+
+        var all = txRepo.findAllByCreatedAtBetween(
+                from.atOffset(ZoneOffset.UTC), to.atOffset(ZoneOffset.UTC));
+
+        var out = new ArrayList<StatementRow>();
+        for (var t : all) {
+            if (t.getState() != TxnState.PAID) continue;
+            var app = appRepo.findByApplicationId(t.getApplicationId()).orElse(null);
+            if (app == null) continue;
+            if (filterBank != null && app.getBankType() != filterBank) continue;
+
+            out.add(new StatementRow(
+                    t.getId(),
+                    t.getTransactionId(),
+                    t.getAmount(),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                            .withZone(ZoneId.of("GMT+5"))
+                            .format(t.getCreatedAt())
+            ));
+        }
+        out.sort(Comparator.comparing(StatementRow::timestamp));
+        return out;
     }
 }

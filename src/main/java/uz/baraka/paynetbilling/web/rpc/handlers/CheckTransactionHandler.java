@@ -24,6 +24,8 @@ class CheckTransactionHandler implements RpcHandler {
     public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var p = binder.bind(params, JsonRpcModels.CheckParams.class);
 
+        billing.requireTxAndValidateService(p.transactionId(), p.serviceId());
+
         var res = billing.checkByTransactionId(p.transactionId());
 
         var values = Map.<String,Object>of(

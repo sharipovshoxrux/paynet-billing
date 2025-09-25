@@ -36,7 +36,7 @@ public class ApplicationController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreateApplicationResponse> create(@RequestBody @Valid CreateApplicationRequest body) {
         var res = service.create(new ApplicationService.CreateRequest(
-                body.userId(), body.pinfl(), body.name(), body.source(), body.purpose()
+                body.userId(), body.pinfl(), body.name(), body.source(), body.purpose(), body.bankType()
         ));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new CreateApplicationResponse(

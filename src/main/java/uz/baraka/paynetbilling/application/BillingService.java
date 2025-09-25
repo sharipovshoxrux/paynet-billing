@@ -1,5 +1,7 @@
 package uz.baraka.paynetbilling.application;
 
+import uz.baraka.paynetbilling.domain.entity.Application;
+import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
 
 import java.math.BigDecimal;
@@ -22,5 +24,9 @@ public interface BillingService {
 
     JsonRpcModels.ApplicationInfo perform(long transactionId, String applicationId, BigDecimal amount);
     JsonRpcModels.CheckByTxResult checkByTransactionId(long transactionId);
+
+    Application requireAppAndValidateService(String applicationId, Integer serviceId);
+    PaymentTransaction requireTxAndValidateService(long transactionId, Integer serviceId);
+    List<StatementRow> statementForReconciliation(LocalDateTime from, LocalDateTime to, Integer serviceId);
 
 }

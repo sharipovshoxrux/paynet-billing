@@ -54,7 +54,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 req.name(),
                 props.fixedAmount(),
                 req.source(),
-                req.purpose()
+                req.purpose(),
+                req.bankType()
         );
 
         repo.save(app);

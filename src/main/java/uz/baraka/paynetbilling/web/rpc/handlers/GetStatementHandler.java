@@ -21,10 +21,13 @@ class GetStatementHandler implements RpcHandler {
 
     @Override
     public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
+        Integer serviceId = null;
+        Object sid = params.get("serviceId");
+        if (sid != null) serviceId = Integer.valueOf(String.valueOf(sid));
         var from = parseTs(String.valueOf(params.get("dateFrom")));
         var to   = parseTs(String.valueOf(params.get("dateTo")));
 
-        var rows = billing.statementForReconciliation(from, to);
+        var rows = billing.statementForReconciliation(from, to, serviceId);
 
         var statements = new ArrayList<Map<String,Object>>(rows.size());
         for (var r : rows) {

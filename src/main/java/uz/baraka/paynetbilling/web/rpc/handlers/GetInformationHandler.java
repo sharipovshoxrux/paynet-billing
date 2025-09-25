@@ -22,6 +22,10 @@ class GetInformationHandler implements RpcHandler {
 
     @Override public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var p = binder.bind(params, JsonRpcModels.GetInfoParams.class);
+
+        // Validate serviceId vs app.bank_type
+        billing.requireAppAndValidateService(p.fields().application_id(), p.serviceId());
+
         var info = billing.getApplicationInfo(p.fields().application_id());
         var fields = Map.<String, Object>of("name", info.name(), "amount", info.amount(), "paid", info.paid());
         return JsonRpcModels.Response.ok(id, new JsonRpcModels.Result("0", JsonRpcController.now(clock), fields));

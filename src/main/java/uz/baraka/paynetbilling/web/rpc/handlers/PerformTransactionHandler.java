@@ -3,6 +3,7 @@ package uz.baraka.paynetbilling.web.rpc.handlers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uz.baraka.paynetbilling.application.BillingService;
+import uz.baraka.paynetbilling.application.validation.AmountValidator;
 import uz.baraka.paynetbilling.web.JsonRpcController;
 import uz.baraka.paynetbilling.web.rpc.JsonParamBinder;
 import uz.baraka.paynetbilling.web.rpc.JsonRpcModels;
@@ -16,6 +17,7 @@ import java.util.Map;
 class PerformTransactionHandler implements RpcHandler {
     private final JsonParamBinder binder;
     private final BillingService billing;
+    private final AmountValidator amountValidator;
     private final Clock clock;
 
     @Override public String method(){ return "PerformTransaction"; }
@@ -23,6 +25,10 @@ class PerformTransactionHandler implements RpcHandler {
     @Override
     public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var p = binder.bind(params, JsonRpcModels.PerformParams.class);
+
+        billing.requireAppAndValidateService(p.fields().application_id(), p.serviceId());
+
+        amountValidator.assertFixed(p.amount());
 
         if (billing.isAlreadyPaid(p.fields().application_id()))
             return JsonRpcModels.Response.err(id, 201, "Транзакция уже существует");

@@ -45,7 +45,7 @@ public final class JsonRpcModels {
 
     public record Fields(String application_id) {}
 
-    public record GetInfoParams(Fields fields) {}
+    public record GetInfoParams(Integer serviceId, Fields fields) {}
 
     public record PerformParams(BigDecimal amount, Long transactionId, Integer serviceId, Fields fields) {}
 

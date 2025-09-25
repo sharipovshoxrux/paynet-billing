@@ -29,6 +29,8 @@ class CancelTransactionHandler implements RpcHandler {
     public JsonRpcModels.Response handle(Object id, Map<String,Object> params) {
         var p = binder.bind(params, JsonRpcModels.CancelParams.class);
 
+        billing.requireTxAndValidateService(p.transactionId(), p.serviceId());
+
         long providerTrnId = billing.cancelByTransactionId(p.transactionId());
 
         var flatValues = Map.<String,Object>of(

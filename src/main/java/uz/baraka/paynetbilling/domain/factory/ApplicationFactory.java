@@ -3,6 +3,7 @@ package uz.baraka.paynetbilling.domain.factory;
 import org.springframework.stereotype.Component;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
+import uz.baraka.paynetbilling.domain.BankType;
 import uz.baraka.paynetbilling.domain.entity.Application;
 
 import java.math.BigDecimal;
@@ -24,7 +25,8 @@ public class ApplicationFactory {
                                       String name,
                                       BigDecimal amount,
                                       ApplicationSource source,
-                                      ApplicationPurpose purpose) {
+                                      ApplicationPurpose purpose,
+                                      BankType bankType) {
         if (userId == null) throw new IllegalArgumentException("userId is required");
         if (pinfl == null || pinfl.isBlank()) throw new IllegalArgumentException("pinfl is required");
         String effectiveName = (name == null || name.isBlank()) ? "Unknown" : name.trim();
@@ -37,6 +39,7 @@ public class ApplicationFactory {
         app.setAmount(amount);
         app.setSource(source);
         app.setPurpose(purpose);
+        app.setBankType(bankType);
         app.setCreatedAt(OffsetDateTime.now(clock));
         return app;
     }

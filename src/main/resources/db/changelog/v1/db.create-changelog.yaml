@@ -23,3 +23,11 @@ databaseChangeLog:
         - sqlFile:
             dbms: 'postgresql'
             path: db/changelog/v1/v3__application_outcomes.sql
+
+  - changeSet:
+      id: V4__add_bank_type
+      author: shohruh.sharipov
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            path: db/changelog/v1/v4__add_bank_type.sql
