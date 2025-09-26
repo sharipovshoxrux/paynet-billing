@@ -14,6 +14,7 @@ import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
 import uz.baraka.paynetbilling.domain.factory.ApplicationFactory;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
+import uz.baraka.paynetbilling.exception.ResourceAccessDeniedException;
 import uz.baraka.paynetbilling.port.ApplicationOutcomeRepository;
 import uz.baraka.paynetbilling.port.ApplicationRepository;
 import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
@@ -102,5 +103,26 @@ public class ApplicationServiceImpl implements ApplicationService {
             o.setPurpose(purpose);
             outcomeRepo.save(o);
         }
+    }
+
+    @Transactional
+    public boolean markPaidByBank(String applicationId) {
+        var app = repo.findByApplicationId(applicationId)
+                .orElseThrow(() -> new NoSuchApplicationException("Заявка не найдена"));
+
+        if (app.getSource() != ApplicationSource.BANK) {
+            throw new ResourceAccessDeniedException("Доступен только для заявок от Банка");
+        }
+
+        boolean alreadyPaid = txRepo.existsByApplicationIdAndState(applicationId, TxnState.PAID);
+        if (alreadyPaid) return true;
+
+        var tx = new PaymentTransaction();
+        tx.setApplicationId(applicationId);
+        tx.setAmount(props.fixedAmount());
+        tx.setState(TxnState.PAID);
+        txRepo.save(tx);
+
+        return true;
     }
 }

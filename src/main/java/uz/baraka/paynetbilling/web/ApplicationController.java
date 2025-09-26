@@ -74,6 +74,18 @@ public class ApplicationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(
+            value = "/mark-paid",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, Object>> markAsPaid(@RequestBody @Valid MarkPaidRequest body) {
+        boolean success = service.markPaidByBank(body.applicationId());
+        return ResponseEntity.ok(Map.of("success", success));
+    }
+
+    public record MarkPaidRequest(@NotBlank String applicationId) {}
+
     public record ApplicationOutcomeRequest(
             @NotBlank String applicationId,
             @NotNull ApplicationPurpose applicationPurpose

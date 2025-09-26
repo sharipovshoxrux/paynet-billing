@@ -26,6 +26,8 @@ public interface ApplicationService {
 
     void recordOutcome(String applicationId, ApplicationPurpose purpose);
 
+    boolean markPaidByBank(String applicationId);
+
     record ApplicationStatusResponse(
             String applicationId,
             TxnState status,

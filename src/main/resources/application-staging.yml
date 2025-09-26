@@ -8,10 +8,10 @@ app:
   fixed-amount: ${APP_FIXED_AMOUNT:4200000}
   webhook:
     enabled: true
-    url: ${WEBHOOK_URL:https://baraka-app-api-production.uz-pay-prod.ox.one/api-paynet-billing/application/outcome}
-    token-url: https://kc-prod.uz-pay-prod.ox.one/realms/datawise/protocol/openid-connect/token
+    url: ${WEBHOOK_URL:https://baraka-app-api-staging.uz-pay-dev.ox.one/api-paynet-billing/application/outcome}
+    token-url: https://kc-staging.uz-pay-dev.ox.one/realms/datawise/protocol/openid-connect/token
     client-id: paynet-billing-api
-    client-secret: YTYuGjlcImrjvOA6nQZys1gkwyw0lhmc
+    client-secret: vpyWKyZXx25cDHtVSo17lAdXJN8Kr7Qy
     connect-timeout: 3s
     read-timeout: 5s
     max-retries: 3
@@ -23,10 +23,10 @@ springdoc:
 internal:
   api:
     header-name: X-Internal-Key
-    key: ${INTERNAL_KEY:60ef2c0d3398d29cb3ea711a6716057723c394e}
+    key: ${INTERNAL_KEY:222be2bbadc4fe2289cba2f1ffa4b77121a98bc}
 security:
   creds:
     partners:
       - username: paynet
-        password-hash: $2a$10$6BqxBzww.a4mpRhlTNeZgeJeudu36u.cw5f40YYHDU8y5ongBzQvm
+        password-hash: $2a$10$vQtnAkI3Aj0gEAhj0XFzU./2nX5Fv7SbSXVeiIhAj.K4chF1baOAe
         enabled: true

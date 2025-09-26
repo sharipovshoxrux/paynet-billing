@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uz.baraka.paynetbilling.exception.CannotCancelAfterOutcomeException;
 import uz.baraka.paynetbilling.exception.InvalidAmountException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
+import uz.baraka.paynetbilling.exception.ResourceAccessDeniedException;
 import uz.baraka.paynetbilling.exception.ServiceNotFoundException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyCancelledException;
 import uz.baraka.paynetbilling.exception.TransactionAlreadyExistsException;
@@ -54,6 +55,11 @@ public class JsonRpcAdvice {
     @ExceptionHandler(ServiceNotFoundException.class)
     public ResponseEntity<JsonRpcModels.Response> serviceNotFound(ServiceNotFoundException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 305, e.getMessage()));
+    }
+
+    @ExceptionHandler(ResourceAccessDeniedException.class)
+    public ResponseEntity<JsonRpcModels.Response> resourceAccessDenied(ResourceAccessDeniedException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 403, e.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
