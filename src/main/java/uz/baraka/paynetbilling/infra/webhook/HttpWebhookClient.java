@@ -44,6 +44,8 @@ public class HttpWebhookClient implements WebhookClient{
             return;
         }
 
+        log.info("Webhook sending payment update, body={}", body);
+
         final String accessToken;
         try {
             accessToken = tokenProvider.getAccessToken();
