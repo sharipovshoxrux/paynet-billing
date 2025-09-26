@@ -8,7 +8,7 @@ app:
   fixed-amount: 4200000
   webhook:
     enabled: true
-    url: ${WEBHOOK_URL:http://localhost:9099/payment-callback}
+    url: ${WEBHOOK_URL:https://baraka-app-api-development.uz-pay-dev.ox.one/api-paynet-billing/application/outcome}
     token-url: https://kc-dev.uz-pay-dev.ox.one/realms/datawise/protocol/openid-connect/token
     client-id: paynet-billing-api
     client-secret: 2wKozwtQAFbTIA9jKMUC6nBKQdO879uR

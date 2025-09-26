@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.BillingService;
+import uz.baraka.paynetbilling.application.event.PaymentCompletedEvent;
 import uz.baraka.paynetbilling.application.validation.AmountValidator;
 import uz.baraka.paynetbilling.domain.BankType;
 import uz.baraka.paynetbilling.domain.entity.Application;
@@ -30,7 +31,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Service
@@ -130,7 +130,7 @@ public class BillingServiceImpl implements BillingService {
         tx.setState(TxnState.PAID);
         txRepo.save(tx);
 
-        //events.publishEvent(new PaymentCompletedEvent(app.getApplicationId(), app.getUserId(), true));
+        events.publishEvent(new PaymentCompletedEvent(app.getApplicationId(), app.getUserId(), true));
 
         return new JsonRpcModels.ApplicationInfo(app.getApplicationId(), app.getName(), app.getAmount().divide(BigDecimal.valueOf(100)), true);
     }
