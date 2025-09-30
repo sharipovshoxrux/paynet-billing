@@ -5,7 +5,7 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 app:
-  fixed-amount: 4200000
+  fixed-amount: 4120000
   webhook:
     enabled: true
     url: ${WEBHOOK_URL:https://baraka-app-api-development.uz-pay-dev.ox.one/api-paynet-billing/application/outcome}

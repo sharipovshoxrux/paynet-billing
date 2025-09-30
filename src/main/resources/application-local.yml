@@ -5,7 +5,7 @@ spring:
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 app:
-  fixed-amount: 4200000
+  fixed-amount: 4120000
   webhook:
     enabled: true
     url: ${WEBHOOK_URL:http://localhost:9099/payment-callback}
