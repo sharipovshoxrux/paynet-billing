@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import uz.baraka.paynetbilling.exception.ApplicationAlreadyPaidException;
+import uz.baraka.paynetbilling.exception.ApplicationAlreadyProcessedException;
 import uz.baraka.paynetbilling.exception.CannotCancelAfterOutcomeException;
 import uz.baraka.paynetbilling.exception.InvalidAmountException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
@@ -69,5 +71,15 @@ public class JsonRpcAdvice {
     @ExceptionHandler(NoSuchApplicationException.class)
     public ResponseEntity<JsonRpcModels.Response> applicationNotFound(NoSuchApplicationException e) {
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 302, e.getMessage()));
+    }
+
+    @ExceptionHandler(ApplicationAlreadyPaidException.class)
+    public ResponseEntity<JsonRpcModels.Response> applicationAlreadyPaid(ApplicationAlreadyPaidException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 410, e.getMessage()));
+    }
+
+    @ExceptionHandler(ApplicationAlreadyProcessedException.class)
+    public ResponseEntity<JsonRpcModels.Response> applicationAlreadyProcessed(ApplicationAlreadyProcessedException e) {
+        return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 411, e.getMessage()));
     }
 }

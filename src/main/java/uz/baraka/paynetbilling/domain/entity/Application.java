@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
+import uz.baraka.paynetbilling.domain.ApplicationStatus;
 import uz.baraka.paynetbilling.domain.BankType;
 
 import java.math.BigDecimal;
@@ -60,6 +61,10 @@ public class Application {
     @Enumerated(EnumType.STRING)
     @Column(name="bank_type", nullable=false, length=16)
     private BankType bankType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 16)
+    private ApplicationStatus status = ApplicationStatus.ACTIVE;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

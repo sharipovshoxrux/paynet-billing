@@ -1,6 +1,7 @@
 package uz.baraka.paynetbilling.application;
 
 import jakarta.annotation.Nullable;
+import org.springframework.web.bind.annotation.PathVariable;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
 import uz.baraka.paynetbilling.domain.BankType;
@@ -27,6 +28,8 @@ public interface ApplicationService {
     void recordOutcome(String applicationId, ApplicationPurpose purpose);
 
     boolean markPaidByBank(String applicationId);
+
+    void cancelApplication(@PathVariable String applicationId);
 
     record ApplicationStatusResponse(
             String applicationId,

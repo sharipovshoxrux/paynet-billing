@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.BillingService;
 import uz.baraka.paynetbilling.application.event.PaymentCompletedEvent;
 import uz.baraka.paynetbilling.application.validation.AmountValidator;
+import uz.baraka.paynetbilling.domain.ApplicationStatus;
 import uz.baraka.paynetbilling.domain.BankType;
 import uz.baraka.paynetbilling.domain.entity.Application;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
@@ -47,10 +48,15 @@ public class BillingServiceImpl implements BillingService {
 
     @Override
     public ApplicationInfo getApplicationInfo(String applicationId) {
-        var app = appRepo.findByApplicationId(applicationId)
-                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+        var app = mustBeActive(applicationId);
+
         boolean paid = txRepo.existsByApplicationIdAndState(applicationId, TxnState.PAID);
-        return new ApplicationInfo(app.getApplicationId(), app.getName(), app.getAmount().divide(BigDecimal.valueOf(100)), paid);
+        return new ApplicationInfo(
+                app.getApplicationId(),
+                app.getName(),
+                app.getAmount().divide(BigDecimal.valueOf(100)),
+                paid
+        );
     }
 
     @Override
@@ -114,8 +120,7 @@ public class BillingServiceImpl implements BillingService {
     @Override
     @Transactional
     public JsonRpcModels.ApplicationInfo perform(long transactionId, String applicationId, BigDecimal amount) {
-        var app = appRepo.findByApplicationId(applicationId)
-                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+        var app = mustBeActive(applicationId);
 
         amountValidator.assertFixed(amount);
 
@@ -201,5 +206,14 @@ public class BillingServiceImpl implements BillingService {
         }
         out.sort(Comparator.comparing(StatementRow::timestamp));
         return out;
+    }
+
+    private Application mustBeActive(String applicationId) {
+        var app = appRepo.findByApplicationId(applicationId)
+                .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
+        if (app.getStatus() != ApplicationStatus.ACTIVE) {
+            throw new NoSuchApplicationException("Клиент не найден");
+        }
+        return app;
     }
 }

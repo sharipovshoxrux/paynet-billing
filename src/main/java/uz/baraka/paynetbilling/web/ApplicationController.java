@@ -74,6 +74,13 @@ public class ApplicationController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @PostMapping(value = "/{applicationId}/cancel")
+    public ResponseEntity<Void> cancelApplication(@PathVariable String applicationId) {
+        service.cancelApplication(applicationId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping(
             value = "/mark-paid",
             consumes = MediaType.APPLICATION_JSON_VALUE,

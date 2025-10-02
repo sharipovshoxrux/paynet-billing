@@ -2,17 +2,21 @@ package uz.baraka.paynetbilling.application.impl;
 
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.ApplicationService;
 import uz.baraka.paynetbilling.config.AppProps;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
+import uz.baraka.paynetbilling.domain.ApplicationStatus;
 import uz.baraka.paynetbilling.domain.entity.Application;
 import uz.baraka.paynetbilling.domain.entity.ApplicationOutcome;
 import uz.baraka.paynetbilling.domain.entity.PaymentTransaction;
 import uz.baraka.paynetbilling.domain.entity.TxnState;
 import uz.baraka.paynetbilling.domain.factory.ApplicationFactory;
+import uz.baraka.paynetbilling.exception.ApplicationAlreadyPaidException;
+import uz.baraka.paynetbilling.exception.ApplicationAlreadyProcessedException;
 import uz.baraka.paynetbilling.exception.NoSuchApplicationException;
 import uz.baraka.paynetbilling.exception.ResourceAccessDeniedException;
 import uz.baraka.paynetbilling.port.ApplicationOutcomeRepository;
@@ -21,6 +25,7 @@ import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
 import uz.baraka.paynetbilling.util.IdGenerator;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
@@ -124,5 +129,26 @@ public class ApplicationServiceImpl implements ApplicationService {
         txRepo.save(tx);
 
         return true;
+    }
+
+    @Transactional
+    public void cancelApplication(String applicationId) {
+        var app = repo.findByApplicationId(applicationId)
+                .orElseThrow(() -> new NoSuchApplicationException("Application not found"));
+
+        if (app.getStatus() == ApplicationStatus.CANCELLED) return;
+
+        boolean hasPaid = txRepo.existsByApplicationIdAndState(applicationId, TxnState.PAID);
+        if (hasPaid) {
+            throw new ApplicationAlreadyPaidException("Application already paid, cannot cancel");
+        }
+
+        boolean hasOutcome = outcomeRepo.existsByApplicationId(applicationId);
+        if (hasOutcome) {
+            throw new ApplicationAlreadyProcessedException("Application already processed, cannot cancel");
+        }
+
+        app.setStatus(ApplicationStatus.CANCELLED);
+        repo.save(app);
     }
 }
