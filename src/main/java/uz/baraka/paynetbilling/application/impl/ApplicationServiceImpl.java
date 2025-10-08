@@ -2,7 +2,6 @@ package uz.baraka.paynetbilling.application.impl;
 
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.baraka.paynetbilling.application.ApplicationService;
@@ -25,7 +24,6 @@ import uz.baraka.paynetbilling.port.PaymentTransactionRepository;
 import uz.baraka.paynetbilling.util.IdGenerator;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
@@ -47,8 +45,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     public CreateResponse create(CreateRequest req) {
         Objects.requireNonNull(req, "request is required");
         if (req.userId() == null) throw new IllegalArgumentException("userId is required");
-        if (req.pinfl() == null || req.pinfl().isBlank()) {
-            throw new IllegalArgumentException("pinfl is required");
+        if (req.pinfl() == null || req.pinfl().isBlank()) throw new IllegalArgumentException("pinfl is required");
+
+        var existing = repo.findTopByUserIdAndStatusInOrderByCreatedAtDesc(
+                req.userId(), List.of(ApplicationStatus.CREATED, ApplicationStatus.PAID)
+        );
+        if (existing.isPresent()) {
+            var app = existing.get();
+            return new CreateResponse(
+                    app.getApplicationId(),
+                    app.getName(),
+                    app.getAmount(),
+                    app.getSource(),
+                    app.getPurpose()
+            );
         }
 
         String applicationId = IdGenerator.generateApplicationId();
@@ -63,50 +73,96 @@ public class ApplicationServiceImpl implements ApplicationService {
                 req.purpose(),
                 req.bankType()
         );
+        app.setStatus(ApplicationStatus.CREATED);
 
         repo.save(app);
 
-        String name = app.getName();
-        return new CreateResponse(applicationId, name, props.fixedAmount(), req.source(), req.purpose());
+        return new CreateResponse(
+                app.getApplicationId(),
+                app.getName(),
+                app.getAmount(),
+                app.getSource(),
+                app.getPurpose()
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<ApplicationStatusResponse> findStatusesByUserId(UUID userId,
-                                                                @Nullable TxnState statusFilter,
-                                                                @Nullable ApplicationPurpose purpose,
-                                                                @Nullable ApplicationSource source) {
+    public List<ApplicationStatusResponse> findStatusesByUserId(
+            UUID userId,
+            @Nullable ApplicationStatus statusFilter,
+            @Nullable ApplicationPurpose purpose,
+            @Nullable ApplicationSource source) {
 
         var apps = repo.findAllByUserIdAndFilters(userId, purpose, source);
         if (apps.isEmpty()) return List.of();
 
         var appIds = apps.stream().map(Application::getApplicationId).toList();
-        var latestTxs = txRepo.findLatestByApplicationIds(appIds).stream()
+
+        var latestTxByAppId = txRepo.findLatestByApplicationIds(appIds).stream()
                 .collect(Collectors.toMap(PaymentTransaction::getApplicationId, Function.identity()));
 
-        var results = apps.stream()
-                .map(a -> {
-                    var latest = latestTxs.get(a.getApplicationId());
-                    if (latest == null) {
-                        return new ApplicationStatusResponse(a.getApplicationId(), TxnState.CANCELLED, a.getSource(), a.getPurpose());
+        var outcomes = outcomeRepo.findAllByApplicationIdIn(appIds).stream()
+                .collect(Collectors.groupingBy(ApplicationOutcome::getApplicationId));
+
+        return apps.stream()
+                .map(app -> {
+                    ApplicationStatus status;
+
+                    if (app.getStatus() == ApplicationStatus.CANCELLED) {
+                        status = ApplicationStatus.CANCELLED;
+                    } else if (outcomes.containsKey(app.getApplicationId())) {
+                        status = ApplicationStatus.COMPLETED;
+                    } else {
+                        var latestTx = latestTxByAppId.get(app.getApplicationId());
+                        if (latestTx == null) {
+                            status = ApplicationStatus.CREATED;
+                        } else {
+                            switch (latestTx.getState()) {
+                                case PAID -> status = ApplicationStatus.PAID;
+                                case CANCELLED -> status = ApplicationStatus.REFUNDED;
+                                default -> status = ApplicationStatus.CREATED;
+                            }
+                        }
                     }
-                    return new ApplicationStatusResponse(a.getApplicationId(), latest.getState(), a.getSource(), a.getPurpose());
+
+                    return new ApplicationStatusResponse(
+                            app.getApplicationId(),
+                            status,
+                            app.getSource(),
+                            app.getPurpose()
+                    );
                 })
                 .filter(r -> statusFilter == null || r.status() == statusFilter)
                 .toList();
-
-        return results;
     }
 
+    @Override
     @Transactional
     public void recordOutcome(String applicationId, ApplicationPurpose purpose) {
-        repo.findByApplicationId(applicationId)
+        Objects.requireNonNull(applicationId, "applicationId is required");
+        Objects.requireNonNull(purpose, "purpose is required");
+
+        var app = repo.findByApplicationId(applicationId)
                 .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
 
-        if (!outcomeRepo.existsByApplicationIdAndPurpose(applicationId, purpose)) {
-            ApplicationOutcome o = new ApplicationOutcome();
-            o.setApplicationId(applicationId);
-            o.setPurpose(purpose);
-            outcomeRepo.save(o);
+        boolean alreadyRecorded = outcomeRepo.existsByApplicationIdAndPurpose(applicationId, purpose);
+        if (!alreadyRecorded) {
+            var outcome = new ApplicationOutcome();
+            outcome.setApplicationId(applicationId);
+            outcome.setPurpose(purpose);
+            outcomeRepo.save(outcome);
+        }
+
+        switch (app.getStatus()) {
+            case PAID -> {
+                app.setStatus(ApplicationStatus.COMPLETED);
+                repo.save(app);
+            }
+//            case CREATED -> {
+//
+//            }
+//            case COMPLETED, CANCELLED, REFUNDED -> {
+//            }
         }
     }
 

@@ -8,6 +8,7 @@ import uz.baraka.paynetbilling.domain.ApplicationSource;
 import uz.baraka.paynetbilling.domain.ApplicationStatus;
 import uz.baraka.paynetbilling.domain.entity.Application;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,7 +16,8 @@ import java.util.UUID;
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
     Optional<Application> findByApplicationId(String applicationId);
 
-    boolean existsByApplicationIdAndStatus(String applicationId, ApplicationStatus status);
+    Optional<Application> findTopByUserIdAndStatusInOrderByCreatedAtDesc(
+            UUID userId, Collection<ApplicationStatus> statuses);
 
     @Query("""
       select a from Application a

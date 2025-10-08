@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import uz.baraka.paynetbilling.config.AppProps;
 import uz.baraka.paynetbilling.domain.ApplicationPurpose;
 import uz.baraka.paynetbilling.domain.ApplicationSource;
+import uz.baraka.paynetbilling.domain.ApplicationStatus;
 import uz.baraka.paynetbilling.domain.dto.request.CreateApplicationRequest;
 import uz.baraka.paynetbilling.domain.dto.response.CreateApplicationResponse;
 import uz.baraka.paynetbilling.application.ApplicationService;
-import uz.baraka.paynetbilling.domain.entity.TxnState;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class ApplicationController {
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ApplicationService.ApplicationStatusResponse>> getApplicationsStatus(
             @PathVariable UUID userId,
-            @RequestParam(required = false) TxnState status,
+            @RequestParam(required = false) ApplicationStatus status,
             @RequestParam(required = false) ApplicationPurpose purpose,
             @RequestParam(required = false) ApplicationSource source
     ) {

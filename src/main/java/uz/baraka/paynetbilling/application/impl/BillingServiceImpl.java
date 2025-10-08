@@ -1,6 +1,7 @@
 package uz.baraka.paynetbilling.application.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class BillingServiceImpl implements BillingService {
     private final PaymentTransactionRepository txRepo;
     private final ApplicationRepository appRepo;
@@ -48,7 +50,7 @@ public class BillingServiceImpl implements BillingService {
 
     @Override
     public ApplicationInfo getApplicationInfo(String applicationId) {
-        var app = mustBeActive(applicationId);
+        var app = mustBeInStatuses(applicationId, ApplicationStatus.CREATED, ApplicationStatus.PAID);
 
         boolean paid = txRepo.existsByApplicationIdAndState(applicationId, TxnState.PAID);
         return new ApplicationInfo(
@@ -120,13 +122,15 @@ public class BillingServiceImpl implements BillingService {
     @Override
     @Transactional
     public JsonRpcModels.ApplicationInfo perform(long transactionId, String applicationId, BigDecimal amount) {
-        var app = mustBeActive(applicationId);
-
-        amountValidator.assertFixed(amount);
-
         txRepo.findByTransactionId(transactionId).ifPresent(tx -> {
             throw new TransactionAlreadyExistsException("Транзакция уже существует");
         });
+
+        var app = mustExist(applicationId);
+
+        log.debug("Application {} is eligible for payment", applicationId);
+
+        amountValidator.assertFixed(amount);
 
         var tx = new PaymentTransaction();
         tx.setTransactionId(transactionId);
@@ -135,10 +139,19 @@ public class BillingServiceImpl implements BillingService {
         tx.setState(TxnState.PAID);
         txRepo.save(tx);
 
+        app.setStatus(ApplicationStatus.PAID);
+        appRepo.save(app);
+
         events.publishEvent(new PaymentCompletedEvent(app.getApplicationId(), app.getUserId(), true));
 
-        return new JsonRpcModels.ApplicationInfo(app.getApplicationId(), app.getName(), app.getAmount().divide(BigDecimal.valueOf(100)), true);
+        return new JsonRpcModels.ApplicationInfo(
+                app.getApplicationId(),
+                app.getName(),
+                app.getAmount().divide(BigDecimal.valueOf(100)),
+                true
+        );
     }
+
 
 
     @Override
@@ -208,10 +221,16 @@ public class BillingServiceImpl implements BillingService {
         return out;
     }
 
-    private Application mustBeActive(String applicationId) {
-        var app = appRepo.findByApplicationId(applicationId)
+    private Application mustExist(String applicationId) {
+        return appRepo.findByApplicationId(applicationId)
                 .orElseThrow(() -> new NoSuchApplicationException("Клиент не найден"));
-        if (app.getStatus() != ApplicationStatus.ACTIVE) {
+    }
+
+    private Application mustBeInStatuses(String applicationId, ApplicationStatus... allowed) {
+        var app = mustExist(applicationId);
+        var ok = java.util.EnumSet.noneOf(ApplicationStatus.class);
+        ok.addAll(java.util.Arrays.asList(allowed));
+        if (!ok.contains(app.getStatus())) {
             throw new NoSuchApplicationException("Клиент не найден");
         }
         return app;

@@ -64,7 +64,7 @@ public class Application {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 16)
-    private ApplicationStatus status = ApplicationStatus.ACTIVE;
+    private ApplicationStatus status = ApplicationStatus.CREATED;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

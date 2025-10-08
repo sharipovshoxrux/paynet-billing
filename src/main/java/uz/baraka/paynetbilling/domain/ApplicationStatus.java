@@ -1,6 +1,9 @@
 package uz.baraka.paynetbilling.domain;
 
 public enum ApplicationStatus {
-    ACTIVE,
-    CANCELLED
+    CREATED,
+    PAID,
+    CANCELLED,
+    COMPLETED,
+    REFUNDED
 }
