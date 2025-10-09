@@ -47,3 +47,11 @@ databaseChangeLog:
         - sqlFile:
             dbms: 'postgresql'
             path: db/changelog/v1/v6__applications_update_status.sql
+
+  - changeSet:
+      id: V7__applications_status_fix
+      author: shohruh.sharipov
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            path: db/changelog/v1/v7__applications_status_fix.sql
