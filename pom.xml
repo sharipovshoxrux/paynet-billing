@@ -31,6 +31,11 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-spring-boot-starter-jakarta</artifactId>
+            <version>7.8.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -75,6 +80,31 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>io.sentry</groupId>
+                <artifactId>sentry-maven-plugin</artifactId>
+                <version>0.0.4</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <debugSentryCli>true</debugSentryCli>
+
+                    <org>sentry</org>
+
+                    <project>paynet-billing</project>
+
+
+<!--                    <authToken>${env.SENTRY_AUTH_TOKEN}</authToken>-->
+                    <authToken>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
+                    </authToken>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>uploadSourceBundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
