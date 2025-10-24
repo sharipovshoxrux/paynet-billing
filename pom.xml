@@ -94,7 +94,7 @@
 
 
 <!--                    <authToken>${env.SENTRY_AUTH_TOKEN}</authToken>-->
-                    <authToken>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
+                    <authToken>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
                     </authToken>
                 </configuration>
                 <executions>

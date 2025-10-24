@@ -31,7 +31,7 @@ security:
         password-hash: $2a$10$6BqxBzww.a4mpRhlTNeZgeJeudu36u.cw5f40YYHDU8y5ongBzQvm
         enabled: true
 sentry:
-  dsn: http://1552fa6af3d90f4b40dd7b10bcd81515@10.76.16.157:9000/11
+  dsn: http://81870a6273f8b1ed5825413323f4502c@10.76.16.157:9000/12
   environment: production
   exception-resolver-order: -2147483647
   send-default-pii: false
