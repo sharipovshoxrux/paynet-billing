@@ -92,9 +92,8 @@
 
                     <project>paynet-billing</project>
 
-
 <!--                    <authToken>${env.SENTRY_AUTH_TOKEN}</authToken>-->
-                    <authToken>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
+                    <authToken>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
                     </authToken>
                 </configuration>
                 <executions>
