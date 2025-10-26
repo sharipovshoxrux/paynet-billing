@@ -81,30 +81,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>io.sentry</groupId>
-                <artifactId>sentry-maven-plugin</artifactId>
-                <version>0.0.4</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <debugSentryCli>true</debugSentryCli>
-
-                    <org>sentry</org>
-
-                    <project>paynet-billing</project>
-
-<!--                    <authToken>${env.SENTRY_AUTH_TOKEN}</authToken>-->
-                    <authToken>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
-                    </authToken>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>uploadSourceBundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
