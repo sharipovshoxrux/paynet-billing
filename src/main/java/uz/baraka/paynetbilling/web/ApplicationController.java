@@ -81,6 +81,11 @@ public class ApplicationController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/sentry-throw")
+    public String throwSentry() {
+        throw new RuntimeException("Sentry exception");
+    }
+
     @PostMapping(
             value = "/mark-paid",
             consumes = MediaType.APPLICATION_JSON_VALUE,
