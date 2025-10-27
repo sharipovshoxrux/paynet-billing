@@ -1,6 +1,5 @@
 package uz.baraka.paynetbilling.web.advice;
 
-import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,71 +27,59 @@ public class JsonRpcAdvice {
 
     @ExceptionHandler(InvalidAmountException.class)
     public ResponseEntity<JsonRpcModels.Response> invalidAmount(InvalidAmountException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 413, e.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<JsonRpcModels.Response> badParams(IllegalArgumentException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), -32602, e.getMessage()));
     }
     @ExceptionHandler(TransactionAlreadyExistsException.class)
     public ResponseEntity<JsonRpcModels.Response> transactionAlreadyExists(TransactionAlreadyExistsException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 201, e.getMessage()));
     }
 
     @ExceptionHandler(TransactionNotFoundException.class)
     public ResponseEntity<JsonRpcModels.Response> transactionNotFound(TransactionNotFoundException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 203, e.getMessage()));
     }
 
     @ExceptionHandler(TransactionAlreadyCancelledException.class)
     public ResponseEntity<JsonRpcModels.Response> transactionAlreadyCancelled(TransactionAlreadyCancelledException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 202, e.getMessage()));
     }
 
     @ExceptionHandler(CannotCancelAfterOutcomeException.class)
     public ResponseEntity<JsonRpcModels.Response> cannotCancelAfter(CancellationException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 77, e.getMessage()));
     }
 
     @ExceptionHandler(ServiceNotFoundException.class)
     public ResponseEntity<JsonRpcModels.Response> serviceNotFound(ServiceNotFoundException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 305, e.getMessage()));
     }
 
     @ExceptionHandler(ResourceAccessDeniedException.class)
     public ResponseEntity<JsonRpcModels.Response> resourceAccessDenied(ResourceAccessDeniedException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 403, e.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<JsonRpcModels.Response> notFound(NoSuchElementException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 404, e.getMessage()));
     }
     @ExceptionHandler(NoSuchApplicationException.class)
     public ResponseEntity<JsonRpcModels.Response> applicationNotFound(NoSuchApplicationException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 302, e.getMessage()));
     }
 
     @ExceptionHandler(ApplicationAlreadyPaidException.class)
     public ResponseEntity<JsonRpcModels.Response> applicationAlreadyPaid(ApplicationAlreadyPaidException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 410, e.getMessage()));
     }
 
     @ExceptionHandler(ApplicationAlreadyProcessedException.class)
     public ResponseEntity<JsonRpcModels.Response> applicationAlreadyProcessed(ApplicationAlreadyProcessedException e) {
-        Sentry.captureException(e);
         return ResponseEntity.ok(JsonRpcModels.Response.err(idHolder.get(), 411, e.getMessage()));
     }
 }
