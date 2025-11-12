@@ -3,7 +3,7 @@ package uz.baraka.paynetbilling.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum ApplicationPurpose {
-    ISSUE, RE_ISSUE;
+    ISSUE, RE_ISSUE, ISSUE_AND_PRINT;
 
     @JsonCreator
     public static ApplicationPurpose from(String v) {
