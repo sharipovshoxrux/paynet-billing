@@ -63,3 +63,11 @@ databaseChangeLog:
         - sqlFile:
             dbms: 'postgresql'
             path: db/changelog/v1/v8__adding_constraint_into_purpose.sql
+
+  - changeSet:
+      id: V9__adding_additional_constraint_into_purpose
+      author: shohruh.sharipov
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            path: db/changelog/v1/v9__adding_additional_constraint_into_purpose.sql
